@@ -5,28 +5,30 @@ from datetime import datetime
 import logging
 
 base_url = settings.TSETMC_API_URL
+base_header = {
+    'User-Agent': settings.TSETMC_REQUIRED_USER_AGENT
+}
 
 logger = logging.getLogger(__name__)
 
+
 def get_indexes() -> Optional[...]:
     url = '{0}{1}'.format(base_url, 'Index/GetIndexB1LastAll/All/1/')
-    print(url)
     try:
-        headers = {'User-Agent': 'PostmanRuntime/7.32.3'}
-        resp = requests.get(url, headers=headers)
-        print(resp.json())
+        resp = requests.get(url, headers=base_header)
         indexes = resp.json()['indexB1']
-        return ({'ins_code': i['insCode'], 'lval30': i['lVal30']} for i in indexes)
-    except requests.exceptions.RequestException as exc:
-        logger.error(exc)
+        return (index for index in indexes)
+    except requests.exceptions.RequestException as ex:
+        logger.error(ex)
         return None
+
 
 def get_index_histories(ins_code: str) -> Optional[...]:
     url = '{0}{1}'.format(base_url, f'Index/GetIndexB2History/{ins_code}')
     try:
-        resp = requests.get(url)
+        resp = requests.get(url, headers=base_header)
         histories = resp.json()['indexB2']
-        return ({'date': datetime(year=h['dEven'][0:4],month=h['dEven'][4:6], day=h['dEven'][6:8]).strftime('%Y-%m-%d'), \
-                'low':h['xNivInuPbMresIbs'], 'high': d['xNivInuPhMresIbs'], 'close': d['xNivInuClMresIbs']} for h in histories)
-    except requests.exceptions.RequestException:
+        return (history for history in histories)
+    except requests.exceptions.RequestException as ex:
+        logger.error(ex)
         return None
