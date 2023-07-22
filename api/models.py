@@ -2,14 +2,16 @@ from django.db import models
 
 # Create your models here.
 
+
 class Index(models.Model):
-    ins_code = models.CharField(primary_key=True, max_length=20)
-    lval30 = models.CharField(max_length=25)
+    ins_code = models.CharField(max_length=20, unique=True)
+    lval30 = models.CharField(max_length=40)
+
 
 class IndexHistory(models.Model):
-    index = models.ForeignKey(Index, on_delete=models.CASCADE)
-    date = models.DateTimeField(blank=True)
+    index = models.ForeignKey(
+        Index, related_name='histories', to_field='ins_code', on_delete=models.CASCADE)
+    date = models.DateField(blank=True)
     low = models.DecimalField(max_digits=8, decimal_places=1, blank=True)
     high = models.DecimalField(max_digits=8, decimal_places=1, blank=True)
     close = models.DecimalField(max_digits=8, decimal_places=1, blank=True)
-    
